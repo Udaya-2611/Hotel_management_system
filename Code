@@ -1,0 +1,130 @@
+import csv
+import os
+from datetime import datetime
+
+ROOM_FILE = "rooms.csv"
+BOOKING_FILE = "bookings.csv"
+
+# Initialize room data
+def initialize_rooms():
+    if not os.path.exists(ROOM_FILE):
+        with open(ROOM_FILE, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["RoomNo", "Type", "Status"])
+            for i in range(101, 106):
+                writer.writerow([i, "Single", "Available"])
+            for i in range(201, 206):
+                writer.writerow([i, "Double", "Available"])
+        print("Rooms initialized.")
+
+# Display rooms
+def show_rooms():
+    with open(ROOM_FILE, mode='r') as file:
+        reader = csv.reader(file)
+        print("\n--- Room Details ---")
+        for row in reader:
+            print("\t".join(row))
+
+# Book room
+def book_room():
+    room_no = input("Enter room number: ")
+    name = input("Enter customer name: ")
+
+    rooms = []
+    updated = False
+
+    with open(ROOM_FILE, mode='r') as file:
+        reader = csv.reader(file)
+        header = next(reader)
+        for row in reader:
+            if row[0] == room_no and row[2] == "Available":
+                row[2] = "Booked"
+                updated = True
+            rooms.append(row)
+
+    if not updated:
+        print("Room not available.")
+        return
+
+    with open(ROOM_FILE, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
+        writer.writerows(rooms)
+
+    # Save booking
+    with open(BOOKING_FILE, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        now = datetime.now()
+        writer.writerow([room_no, name, now.strftime("%Y-%m-%d"), now.strftime("%H:%M:%S")])
+
+    print("Room booked successfully.")
+
+# Checkout
+def checkout():
+    room_no = input("Enter room number to checkout: ")
+
+    rooms = []
+    updated = False
+
+    with open(ROOM_FILE, mode='r') as file:
+        reader = csv.reader(file)
+        header = next(reader)
+        for row in reader:
+            if row[0] == room_no and row[2] == "Booked":
+                row[2] = "Available"
+                updated = True
+            rooms.append(row)
+
+    if not updated:
+        print("Invalid room or already available.")
+        return
+
+    with open(ROOM_FILE, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
+        writer.writerows(rooms)
+
+    print("Checkout successful.")
+
+# View bookings
+def view_bookings():
+    if not os.path.exists(BOOKING_FILE):
+        print("No bookings yet.")
+        return
+
+    with open(BOOKING_FILE, mode='r') as file:
+        reader = csv.reader(file)
+        print("\n--- Booking Records ---")
+        for row in reader:
+            print("\t".join(row))
+
+# Main menu
+def menu():
+    initialize_rooms()
+
+    while True:
+        print("\n===== Hotel Management System =====")
+        print("1. Show Rooms")
+        print("2. Book Room")
+        print("3. Checkout")
+        print("4. View Bookings")
+        print("5. Exit")
+
+        choice = input("Enter choice: ")
+
+        if choice == '1':
+            show_rooms()
+        elif choice == '2':
+            book_room()
+        elif choice == '3':
+            checkout()
+        elif choice == '4':
+            view_bookings()
+        elif choice == '5':
+            print("Exiting system...")
+            break
+        else:
+            print("Invalid choice")
+
+if __name__ == "__main__":
+    menu()
